@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/fjl/sds/internal/cmdutil"
-	"github.com/fjl/sds/sds"
+	"github.com/PembertonDrive/md-sds/internal/cmdutil"
+	"github.com/PembertonDrive/md-sds/sds"
 	"github.com/go-audio/audio"
 	"github.com/go-audio/transforms"
 	"github.com/go-audio/wav"

@@ -1,6 +1,6 @@
-module github.com/fjl/sds
+module github.com/PembertonDrive/md-sds
 
-go 1.17
+go 1.18
 
 require (
 	github.com/go-audio/audio v1.0.0
