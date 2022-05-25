@@ -20,10 +20,13 @@ func main() {
 		outDevice = flag.String("odev", "", "MIDI output device (default: same as input)")
 		channel   = flag.Int("ch", 0, "Sysex channel number")
 		slot      = flag.Int("slot", 0, "Waveform slot number")
+		startLoop		= flag.Int("startl", 0, "Loop start (sample starts at 0)")
+		endLoop		= flag.Int("endl", 0, "Loop end, sample based")
 	)
 	flag.Parse()
 	midiConfig := cmdutil.Config{InDevice: *inDevice, OutDevice: *outDevice}
 	sendConfig := sendConfig{Channel: *channel, WaveformNumber: *slot}
+	lcfg := loopConfig{LoopStart: *startLoop, LoopEnd: *endLoop}
 	if flag.NArg() != 1 {
 		log.Fatal("need wave file as argument")
 	}
@@ -46,7 +49,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer conn.Close()
-	doTransfer(&sendConfig, conn, buffer)
+	doTransfer(&sendConfig, conn, buffer, lcfg)
 }
 
 func readWAV(file string) (*audio.IntBuffer, error) {
@@ -78,18 +81,25 @@ type sendConfig struct {
 	WaveformNumber int
 }
 
+type loopConfig struct {
+	LoopStart			int
+	LoopEnd				int
+}
+
 const (
 	handshakeTimeout    = 2 * time.Second
 	dataResponseTimeout = 20 * time.Millisecond
 )
 
 // doTransfer sends the given waveform via SDS.
-func doTransfer(cfg *sendConfig, conn *cmdutil.Conn, waveform *audio.IntBuffer) {
+func doTransfer(cfg *sendConfig, conn *cmdutil.Conn, waveform *audio.IntBuffer, lcfg loopConfig) {
 	header := &sds.DumpHeader{
 		Channel:  byte(cfg.Channel),
 		Number:   uint16(cfg.WaveformNumber),
 		BitDepth: byte(waveform.SourceBitDepth),
 		Period:   samplerateToPeriod(waveform.Format.SampleRate),
+		LoopStart:uint(lcfg.LoopStart),
+		LoopEnd:	uint(lcfg.LoopEnd),
 	}
 	transfer := sds.NewSendOp(waveform.Data, header)
 
